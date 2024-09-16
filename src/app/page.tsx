@@ -73,7 +73,7 @@ const TodoApp = () => {
         id: todos.find(x => x._id == id)!._id,
         completed: todos.find(x => x._id == id)!.completed
       })
-    }).then(res => res.json()).then(data => {
+    }).then(res => res.json()).then(() => {
       setTodos(
         todos.map((todo) =>
           todo._id === id ? { ...todo, completed: !todo.completed } : todo
@@ -91,7 +91,7 @@ const TodoApp = () => {
       body: JSON.stringify({
         id: todos.find(x => x._id == id)!._id
       })
-    }).then(res => res.json()).then(data => {
+    }).then(res => res.json()).then(() => {
       const newTodos = [...todos];
       newTodos.splice(todos.findIndex(x => x._id == id), 1);
       setTodos(newTodos);
