@@ -1,7 +1,7 @@
 import { CreateConnection } from "@/libs/mongodb";
 import { NextRequest, NextResponse } from "next/server";
 import TodoModel from '@/models/todo';
-import { ITodo } from "@/app/Todo";
+import { Todo } from "@/app/page";
 
 export async function GET() {
     await CreateConnection();
@@ -10,14 +10,14 @@ export async function GET() {
         status: 'success',
         code: 200,
         message: 'Todos fetched successfully',
-        data: todo.filter((x) => x.status == false)
+        data: todo
     });
 }
 
 export async function POST(req: NextRequest) {
     await CreateConnection();
-    const new_todo: ITodo = await req.json();
-    if (!new_todo.name || !new_todo.description || new_todo.status == undefined || !new_todo.dueDate) {
+    const new_todo: Todo = await req.json();
+    if (!new_todo.title || !new_todo.description || new_todo.completed == undefined || !new_todo.dueDate) {
         return NextResponse.json({
             status: 'error',
             code: 400,
@@ -35,15 +35,18 @@ export async function POST(req: NextRequest) {
 
 export async function PUT(req: NextRequest) {
     await CreateConnection();
-    const updated_todo: ITodo = await req.json();
-    if (!updated_todo.name || !updated_todo.description || !updated_todo.status || !updated_todo.dueDate) {
+    const updated_todo = await req.json();
+    if (!updated_todo.id) {
         return NextResponse.json({
             status: 'error',
             code: 400,
             message: 'Missing required fields'
         });
     }
-    const todo = await TodoModel.findOneAndUpdate({ name: updated_todo.name }, updated_todo, { new: true });
+    console.log(updated_todo.id);
+    const todo = await TodoModel.findById(updated_todo.id);
+    todo.completed = !updated_todo.completed;
+    await todo.save();
     return NextResponse.json({
         status: 'success',
         code: 200,
@@ -63,9 +66,7 @@ export async function DELETE(req: NextRequest) {
             message: 'Missing required fields'
         });
     }
-    const todo = await TodoModel.findById(id);
-    todo.status = true;
-    await todo.save();
+    const todo = await TodoModel.findOneAndDelete(id);
     return NextResponse.json({
         status: 'success',
         code: 200,
